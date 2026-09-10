@@ -1,4 +1,4 @@
-package banking_system.notification.infrastructure.adapter.out.persistance;
+package banking_system.notification.infrastructure.adapter.out.persistence;
 
 import banking_system.notification.domain.model.Notification;
 

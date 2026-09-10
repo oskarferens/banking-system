@@ -1,4 +1,4 @@
-package banking_system.account.infrastructure.adapter.out.persistance;
+package banking_system.account.infrastructure.adapter.out.persistence;
 
 import banking_system.account.domain.model.Account;
 import banking_system.account.domain.model.AccountId;

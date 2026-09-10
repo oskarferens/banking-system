@@ -1,4 +1,4 @@
-package banking_system.account.infrastructure.adapter.out.persistance;
+package banking_system.account.infrastructure.adapter.out.persistence;
 
 import banking_system.account.application.port.out.AccountRepositoryPort;
 import banking_system.account.domain.model.Account;
