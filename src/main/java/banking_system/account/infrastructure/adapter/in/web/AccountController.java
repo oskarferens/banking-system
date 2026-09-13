@@ -1,6 +1,6 @@
 package banking_system.account.infrastructure.adapter.in.web;
 
-import banking_system.account.application.port.in.AccountUseCase;
+import banking_system.account.domain.port.AccountUseCase;
 import banking_system.account.domain.model.Account;
 import banking_system.shared.domain.model.Money;
 import org.springframework.http.ResponseEntity;

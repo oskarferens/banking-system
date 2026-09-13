@@ -1,7 +1,7 @@
 package banking_system.account.application.service;
 
-import banking_system.account.application.port.in.AccountUseCase;
-import banking_system.account.application.port.out.AccountRepositoryPort;
+import banking_system.account.domain.port.AccountUseCase;
+import banking_system.account.domain.port.AccountRepositoryPort;
 import banking_system.account.domain.exception.AccountNotFoundException;
 import banking_system.account.domain.model.Account;
 import banking_system.account.domain.model.AccountFactory;

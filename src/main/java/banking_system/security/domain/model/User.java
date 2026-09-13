@@ -1,4 +1,4 @@
-package banking_system.security.domain;
+package banking_system.security.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package banking_system.notification.application.port.out;
+package banking_system.notification.domain.port;
 
 import banking_system.notification.domain.model.Notification;
 

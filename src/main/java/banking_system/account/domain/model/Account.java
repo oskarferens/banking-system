@@ -11,7 +11,7 @@ public class Account {
     private final AccountNumber accountNumber;
     private final String ownerId;
     private Money balance;
-    private final Money overdraftLimit; // Domyślnie -500.00 SEK
+    private final Money overdraftLimit; // Default - 500.00 SEK
 
     public Account(AccountId id, AccountNumber accountNumber, String ownerId, Money balance, Money overdraftLimit) {
         this.id = Objects.requireNonNull(id);

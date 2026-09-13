@@ -1,6 +1,6 @@
 package banking_system.notification.application.service;
 
-import banking_system.notification.application.port.out.NotificationRepositoryPort;
+import banking_system.notification.domain.port.NotificationRepositoryPort;
 import banking_system.notification.domain.model.Notification;
 import banking_system.timemachine.application.service.TimeMachineService;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package banking_system.timemachine.application.service;
 
-import banking_system.timemachine.application.port.in.TimeMachineUseCase;
+import banking_system.timemachine.domain.port.TimeMachineUseCase;
 import banking_system.timemachine.domain.model.TimeMachine;
 import org.springframework.stereotype.Service;
 

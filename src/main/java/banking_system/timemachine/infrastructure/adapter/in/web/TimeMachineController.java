@@ -1,6 +1,6 @@
 package banking_system.timemachine.infrastructure.adapter.in.web;
 
-import banking_system.timemachine.application.port.in.TimeMachineUseCase;
+import banking_system.timemachine.domain.port.TimeMachineUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

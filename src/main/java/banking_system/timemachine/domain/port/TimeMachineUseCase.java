@@ -1,4 +1,4 @@
-package banking_system.timemachine.application.port.in;
+package banking_system.timemachine.domain.port;
 
 import java.time.Instant;
 

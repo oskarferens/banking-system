@@ -1,6 +1,6 @@
 package banking_system.security.infrastructure.adapter.in.web;
 
-import banking_system.security.application.AuthService;
+import banking_system.security.service.AuthService;
 import banking_system.security.infrastructure.adapter.in.web.dto.AuthResponse;
 import banking_system.security.infrastructure.adapter.in.web.dto.LoginRequest;
 import banking_system.security.infrastructure.adapter.in.web.dto.RegisterRequest;

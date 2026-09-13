@@ -1,6 +1,6 @@
 package banking_system.notification.infrastructure.adapter.out.persistence;
 
-import banking_system.notification.application.port.out.NotificationRepositoryPort;
+import banking_system.notification.domain.port.NotificationRepositoryPort;
 import banking_system.notification.domain.model.Notification;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;

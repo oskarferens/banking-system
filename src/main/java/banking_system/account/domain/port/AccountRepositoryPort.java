@@ -1,4 +1,4 @@
-package banking_system.account.application.port.out;
+package banking_system.account.domain.port;
 
 import banking_system.account.domain.model.Account;
 import banking_system.account.domain.model.AccountId;
