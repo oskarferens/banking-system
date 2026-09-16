@@ -1,5 +1,6 @@
 CREATE TABLE transfers (
 id VARCHAR(36) NOT NULL PRIMARY KEY,
+title VARCHAR(255) NOT NULL,
 source_account_id VARCHAR(36) NOT NULL,
 target_account_id VARCHAR(36) NOT NULL,
 amount DECIMAL(19, 2) NOT NULL,

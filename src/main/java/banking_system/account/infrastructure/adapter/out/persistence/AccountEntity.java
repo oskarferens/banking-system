@@ -20,20 +20,21 @@ import java.math.BigDecimal;
 public class AccountEntity {
 
     @Id
+    @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "account_number", nullable = false, unique = true)
+    @Column(name = "account_number", nullable = false, unique = true, length = 24)
     private String accountNumber;
 
-    @Column(name = "owner_id", nullable = false)
+    @Column(name = "owner_id", nullable = false, length = 255)
     private String ownerId;
 
-    @Column(name = "balance_amount", nullable = false)
+    @Column(name = "balance_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal balanceAmount;
 
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
-    @Column(name = "overdraft_limit", nullable = false)
+    @Column(name = "overdraft_limit", nullable = false, precision = 19, scale = 2)
     private BigDecimal overdraftLimit;
 }

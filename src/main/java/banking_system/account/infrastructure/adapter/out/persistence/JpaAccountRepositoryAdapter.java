@@ -1,8 +1,9 @@
 package banking_system.account.infrastructure.adapter.out.persistence;
 
-import banking_system.account.domain.port.AccountRepositoryPort;
 import banking_system.account.domain.model.Account;
 import banking_system.account.domain.model.AccountId;
+import banking_system.account.domain.model.AccountNumber;
+import banking_system.account.domain.port.AccountRepositoryPort;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +29,13 @@ public class JpaAccountRepositoryAdapter implements AccountRepositoryPort {
     @Override
     public Optional<Account> findById(AccountId id) {
         return repository.findById(id.value())
+                .map(AccountMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Account> findByAccountNumber(AccountNumber accountNumber) {
+        // Assume the account number is stored as a String in the entity (accountNumber.value()).
+        return repository.findByAccountNumber(accountNumber.value())
                 .map(AccountMapper::toDomain);
     }
 }

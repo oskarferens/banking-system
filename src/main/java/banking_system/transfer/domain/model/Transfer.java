@@ -15,41 +15,27 @@ public class Transfer {
     private final Money amount;
     private final TransferStatus status;
     private final Instant timestamp;
+    private final String title; // Nowe pole
 
-    public Transfer(TransferId id, AccountId sourceAccountId, AccountId targetAccountId, Money amount, TransferStatus status, Instant timestamp) {
+    public Transfer(TransferId id, AccountId sourceAccountId, AccountId targetAccountId, Money amount, TransferStatus status, Instant timestamp, String title) {
         this.id = Objects.requireNonNull(id, "TransferId cannot be null");
         this.sourceAccountId = Objects.requireNonNull(sourceAccountId, "Source AccountId cannot be null");
         this.targetAccountId = Objects.requireNonNull(targetAccountId, "Target AccountId cannot be null");
         this.amount = Objects.requireNonNull(amount, "Amount cannot be null");
         this.status = Objects.requireNonNull(status, "Status cannot be null");
         this.timestamp = Objects.requireNonNull(timestamp, "Timestamp cannot be null");
+        this.title = Objects.requireNonNull(title, "Title cannot be null");
 
         if (sourceAccountId.equals(targetAccountId)) {
             throw new SameAccountTransferException();
         }
     }
 
-    public TransferId getId() {
-        return id;
-    }
-
-    public AccountId getSourceAccountId() {
-        return sourceAccountId;
-    }
-
-    public AccountId getTargetAccountId() {
-        return targetAccountId;
-    }
-
-    public Money getAmount() {
-        return amount;
-    }
-
-    public TransferStatus getStatus() {
-        return status;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
+    public TransferId getId() { return id; }
+    public AccountId getSourceAccountId() { return sourceAccountId; }
+    public AccountId getTargetAccountId() { return targetAccountId; }
+    public Money getAmount() { return amount; }
+    public TransferStatus getStatus() { return status; }
+    public Instant getTimestamp() { return timestamp; }
+    public String getTitle() { return title; }
 }

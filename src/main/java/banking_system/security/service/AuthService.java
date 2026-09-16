@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepositoryPort userRepository; // Zmieniono na port domenowy
+    private final UserRepositoryPort userRepository; // Changed domain port!!
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -32,7 +32,7 @@ public class AuthService {
             throw new IllegalArgumentException("User with the same email already exists!");
         }
 
-        // Używamy czystego obiektu domenowego User zamiast UserEntity
+        // Using pure domain User object instead of UserEntity
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .email(request.email())
@@ -57,7 +57,7 @@ public class AuthService {
                 )
         );
 
-        // Pobieramy czysty obiekt domenowy
+        // Retrieve the pure domain object
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("Email or password incorrect!"));
 
