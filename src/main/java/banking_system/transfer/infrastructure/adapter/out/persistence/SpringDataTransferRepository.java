@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface SpringDataTransferRepository extends JpaRepository<banking_system.transfer.infrastructure.adapter.out.persistence.TransferEntity, String> {
 
-    // Query that finds transfers where the specified account is either the sender or the recipient.
+    // This isn't my solution but it works. Don't touch.
     @Query("SELECT t FROM TransferEntity t WHERE t.sourceAccountId = :accountId OR t.targetAccountId = :accountId ORDER BY t.timestamp DESC")
     List<banking_system.transfer.infrastructure.adapter.out.persistence.TransferEntity> findAllBySourceAccountIdOrTargetAccountId(@Param("accountId") String accountId);
 }

@@ -1,0 +1,2 @@
+ALTER TABLE transfers
+    ADD COLUMN fee_amount DECIMAL(19, 2) NOT NULL DEFAULT 0.00 AFTER amount;

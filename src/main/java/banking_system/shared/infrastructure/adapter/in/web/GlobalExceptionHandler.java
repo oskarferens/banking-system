@@ -2,6 +2,7 @@ package banking_system.shared.infrastructure.adapter.in.web;
 
 import banking_system.account.domain.exception.AccountNotFoundException;
 import banking_system.account.domain.exception.InsufficientFundsException;
+import banking_system.transfer.domain.exception.ExchangeRateUnavailableException;
 import banking_system.transfer.domain.exception.SameAccountTransferException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SameAccountTransferException.class)
     public ResponseEntity<ErrorResponse> handleSameAccountTransfer(SameAccountTransferException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ExchangeRateUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleExchangeRateUnavailable(ExchangeRateUnavailableException ex, HttpServletRequest request) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -49,7 +49,7 @@ public class TransferController {
         return ResponseEntity.ok(response);
     }
 
-    // --- DTO: Request ---
+    // DTO request
     public record TransferRequestDto(
             @NotBlank(message = "Source account number cannot be blank")
             String sourceAccountNumber,
@@ -68,12 +68,13 @@ public class TransferController {
             String title
     ) {}
 
-    // --- DTO: Response ---
+
     public record TransferResponseDto(
             String id,
             String sourceAccountId,
             String targetAccountId,
             BigDecimal amount,
+            BigDecimal fee,
             String currency,
             String status,
             Instant timestamp,
@@ -85,6 +86,7 @@ public class TransferController {
                     transfer.getSourceAccountId().value(),
                     transfer.getTargetAccountId().value(),
                     transfer.getAmount().amount(),
+                    transfer.getFee().amount(),
                     transfer.getAmount().currency().getCurrencyCode(),
                     transfer.getStatus().name(),
                     transfer.getTimestamp(),

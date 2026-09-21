@@ -35,6 +35,9 @@ public class TransferEntity {
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "fee_amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal feeAmount;
+
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 

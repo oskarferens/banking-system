@@ -19,6 +19,7 @@ public class TransferMapper {
                 .sourceAccountId(domain.getSourceAccountId().value())
                 .targetAccountId(domain.getTargetAccountId().value())
                 .amount(domain.getAmount().amount())
+                .feeAmount(domain.getFee().amount())
                 .currency(domain.getAmount().currency().getCurrencyCode())
                 .status(domain.getStatus().name())
                 .timestamp(domain.getTimestamp())
@@ -34,6 +35,7 @@ public class TransferMapper {
                 new AccountId(entity.getSourceAccountId()),
                 new AccountId(entity.getTargetAccountId()),
                 new Money(entity.getAmount(), currency),
+                new Money(entity.getFeeAmount(), currency),
                 TransferStatus.valueOf(entity.getStatus()),
                 entity.getTimestamp(),
                 entity.getTitle()
