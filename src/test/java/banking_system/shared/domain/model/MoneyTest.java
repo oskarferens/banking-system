@@ -97,7 +97,7 @@ class MoneyTest {
     }
 
     @Test
-    @DisplayName("isLessThan is strict — false when equal")
+    @DisplayName("isLessThan is strict - false when equal")
     void isLessThanStrict() {
         Money a = Money.sek("99.99");
         Money b = Money.sek("100.00");
