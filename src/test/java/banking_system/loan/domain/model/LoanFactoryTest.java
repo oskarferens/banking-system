@@ -69,4 +69,22 @@ class LoanFactoryTest {
         assertThat(loan.getInstallments().get(1).getDueDate()).isEqualTo(originationDate.plus(60, ChronoUnit.DAYS));
         assertThat(loan.getInstallments().get(2).getDueDate()).isEqualTo(originationDate.plus(90, ChronoUnit.DAYS));
     }
+
+    @Test
+    @DisplayName("the public originate() overload applies the bank's default interest rate")
+    void publicOverloadAppliesDefaultRate() {
+        Loan viaDefaultRate = LoanFactory.originate(borrowerAccountId, Money.sek("1200.00"), 12, originationDate);
+        Loan viaExplicitRate = LoanFactory.originate(borrowerAccountId, Money.sek("1200.00"), LoanFactory.DEFAULT_ANNUAL_INTEREST_RATE, 12, originationDate);
+
+        BigDecimal sumViaDefault = viaDefaultRate.getInstallments().stream()
+                .map(installment -> installment.getAmount().amount())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal sumViaExplicit = viaExplicitRate.getInstallments().stream()
+                .map(installment -> installment.getAmount().amount())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        assertThat(sumViaDefault).isEqualByComparingTo(sumViaExplicit);
+        assertThat(viaDefaultRate.getAnnualInterestRate()).isEqualByComparingTo(LoanFactory.DEFAULT_ANNUAL_INTEREST_RATE);
+    }
+
 }
