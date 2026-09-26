@@ -26,7 +26,7 @@ import java.time.Instant;
 public class InstallmentEntity {
 
     @Id
-    @Column(name = "id", length = 36)
+    @Column(name = "id", length = 50)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -150,7 +150,7 @@ class LoanServiceTest {
         // Constructed directly bypassing applyForLoan/scoring to explicitly test
         // the order of operations in recordPayment()
         //- the account is charged BEFORE the loan is updated.
-        Account poorAccount = AccountFactory.createStandardAccount("owner-2"); // balance 0.00, overdraft limit -500.00
+        Account poorAccount = AccountFactory.createStandardAccount("owner-2"); // balance 0.00, overdraft limit -500.00.
         Loan loan = LoanFactory.originate(poorAccount.getId(), Money.sek("5000.00"), 3, Instant.parse("2026-01-01T00:00:00Z"));
         loan.approve();
         Money firstInstallment = loan.getInstallments().get(0).getAmount(); // Way above the limit

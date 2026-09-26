@@ -2,6 +2,9 @@ package banking_system.shared.infrastructure.adapter.in.web;
 
 import banking_system.account.domain.exception.AccountNotFoundException;
 import banking_system.account.domain.exception.InsufficientFundsException;
+import banking_system.loan.domain.exception.InvalidLoanStateTransitionException;
+import banking_system.loan.domain.exception.LoanApplicationRejectedException;
+import banking_system.loan.domain.exception.LoanNotFoundException;
 import banking_system.transfer.domain.exception.ExchangeRateUnavailableException;
 import banking_system.transfer.domain.exception.SameAccountTransferException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +25,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(LoanNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLoanNotFound(LoanNotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientFunds(InsufficientFundsException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
@@ -30,6 +38,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SameAccountTransferException.class)
     public ResponseEntity<ErrorResponse> handleSameAccountTransfer(SameAccountTransferException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(LoanApplicationRejectedException.class)
+    public ResponseEntity<ErrorResponse> handleLoanApplicationRejected(LoanApplicationRejectedException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidLoanStateTransitionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidLoanStateTransition(InvalidLoanStateTransitionException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(ExchangeRateUnavailableException.class)
