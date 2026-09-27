@@ -13,16 +13,14 @@ import java.util.List;
 
 public class LoanFactory {
 
-    static final BigDecimal DEFAULT_ANNUAL_INTEREST_RATE = new BigDecimal("0.0500"); // 5% p.a., bank-set, not client-chosen
+    static final BigDecimal DEFAULT_ANNUAL_INTEREST_RATE = new BigDecimal("0.0500"); // 5% yearly. set by bank not client chosen.
+
     private static final int DAYS_PER_INSTALLMENT = 30;
 
     public static Loan originate(AccountId borrowerAccountId, Money principal, int termInMonths, Instant originationDate) {
         return originate(borrowerAccountId, principal, DEFAULT_ANNUAL_INTEREST_RATE, termInMonths, originationDate);
     }
 
-    // Package private lets domain tests exercise the schedule algorithm at arbitrary rates.
-    // 0% so state transition tests get round numbers without exposing rate selection.
-    // outside the domain application code can only reach the public overload above and it always applies the bank's own rate.
     static Loan originate(AccountId borrowerAccountId, Money principal, BigDecimal annualInterestRate,
                           int termInMonths, Instant originationDate) {
 
@@ -36,6 +34,7 @@ public class LoanFactory {
                 termInMonths,
                 originationDate,
                 installments,
+                Money.zero(principal.currency()),
                 PendingApprovalState.INSTANCE
         );
     }

@@ -3,10 +3,12 @@ package banking_system.loan.domain.model;
 import banking_system.account.domain.model.AccountId;
 import banking_system.loan.domain.exception.InvalidLoanStateTransitionException;
 import banking_system.loan.domain.model.state.LoanState;
+import banking_system.loan.domain.model.state.PendingApprovalState;
 import banking_system.shared.domain.model.Money;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,16 +21,18 @@ public class Loan {
     private final int termInMonths;
     private final Instant createdAt;
     private final List<Installment> installments;
+    private Money accruedPenalty;
     private LoanState state;
 
     public Loan(LoanId id, AccountId borrowerAccountId, Money principal, BigDecimal annualInterestRate,
-                int termInMonths, Instant createdAt, List<Installment> installments, LoanState state) {
+                int termInMonths, Instant createdAt, List<Installment> installments, Money accruedPenalty, LoanState state) {
         this.id = Objects.requireNonNull(id, "LoanId cannot be null");
         this.borrowerAccountId = Objects.requireNonNull(borrowerAccountId, "Borrower AccountId cannot be null");
         this.principal = Objects.requireNonNull(principal, "Principal cannot be null");
         this.annualInterestRate = Objects.requireNonNull(annualInterestRate, "Interest rate cannot be null");
         this.createdAt = Objects.requireNonNull(createdAt, "CreatedAt cannot be null");
         this.installments = Objects.requireNonNull(installments, "Installments cannot be null");
+        this.accruedPenalty = Objects.requireNonNull(accruedPenalty, "Accrued penalty cannot be null");
         this.state = Objects.requireNonNull(state, "LoanState cannot be null");
         this.termInMonths = termInMonths;
 
@@ -63,8 +67,10 @@ public class Loan {
         this.state = state.markDefaulted(this);
     }
 
-    // Public only because LoanState implementations are in a separate subpackage.
-    // recordPayment() remains the intended API and controls payment eligibility.
+    public void applyEndOfDayProcessing(Instant asOf) {
+        this.state = state.processEndOfDay(this, asOf);
+    }
+
     public void applyPayment(Money amount) {
         Installment nextUnpaid = installments.stream()
                 .filter(installment -> !installment.isSettled())
@@ -79,7 +85,34 @@ public class Loan {
         nextUnpaid.markPaid();
     }
 
-    // Same caveat as applyPayment()- public only because LoanState needs it, not an intended entry point.
+    public boolean markInstallmentsOverdueAsOf(Instant asOf) {
+        boolean anyNewlyOverdue = false;
+        for (Installment installment : installments) {
+            if (installment.getStatus() == InstallmentStatus.PENDING && installment.getDueDate().isBefore(asOf)) {
+                installment.markOverdue();
+                anyNewlyOverdue = true;
+            }
+        }
+        return anyNewlyOverdue;
+    }
+
+    public void applyOverduePenalty(BigDecimal dailyPenaltyRate) {
+        BigDecimal penaltyToday = installments.stream()
+                .filter(installment -> installment.getStatus() == InstallmentStatus.OVERDUE)
+                .map(installment -> installment.getAmount().amount().multiply(dailyPenaltyRate))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (penaltyToday.signum() > 0) {
+            this.accruedPenalty = this.accruedPenalty.add(new Money(penaltyToday, principal.currency()));
+        }
+    }
+
+    public boolean hasInstallmentOverdueBeyond(int days, Instant asOf) {
+        return installments.stream()
+                .filter(installment -> installment.getStatus() == InstallmentStatus.OVERDUE)
+                .anyMatch(installment -> ChronoUnit.DAYS.between(installment.getDueDate(), asOf) > days);
+    }
+
     public boolean isFullySettled() {
         return installments.stream().allMatch(Installment::isSettled);
     }
@@ -91,5 +124,6 @@ public class Loan {
     public int getTermInMonths() { return termInMonths; }
     public Instant getCreatedAt() { return createdAt; }
     public List<Installment> getInstallments() { return installments; }
+    public Money getAccruedPenalty() { return accruedPenalty; }
     public LoanStatus getStatus() { return state.status(); }
 }

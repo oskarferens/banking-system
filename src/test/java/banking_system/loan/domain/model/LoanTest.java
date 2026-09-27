@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,12 +17,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LoanTest {
 
     private Loan loan;
+    private Instant originationDate;
 
     @BeforeEach
     void setUp() {
-        // 300.00 SEK, 0% interest, 3 installments of 100.00 - simple math, easy to verify.
-        loan = LoanFactory.originate(
-                AccountId.generate(), Money.sek("300.00"), BigDecimal.ZERO, 3, Instant.parse("2026-01-01T00:00:00Z"));
+        originationDate = Instant.parse("2026-01-01T00:00:00Z");
+        // 300.00 sek, 0% interest, 3/100.00 simple math easy to verify.
+        loan = LoanFactory.originate(AccountId.generate(), Money.sek("300.00"), BigDecimal.ZERO, 3, originationDate);
     }
 
     @Test
@@ -152,5 +154,88 @@ class LoanTest {
     void cannotMarkOverduePendingLoan() {
         assertThatThrownBy(() -> loan.markOverdue())
                 .isInstanceOf(InvalidLoanStateTransitionException.class);
+    }
+
+    @Test
+    @DisplayName("processing a day before the first due date leaves an active loan untouched")
+    void endOfDayBeforeDueDateDoesNothing() {
+        loan.approve();
+
+        loan.applyEndOfDayProcessing(originationDate.plus(10, ChronoUnit.DAYS));
+
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
+        assertThat(loan.getInstallments().get(0).getStatus()).isEqualTo(InstallmentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("processing a day after the first due date marks that installment overdue and moves the loan to OVERDUE")
+    void endOfDayAfterDueDateMarksOverdue() {
+        loan.approve();
+
+        loan.applyEndOfDayProcessing(originationDate.plus(31, ChronoUnit.DAYS));
+
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
+        assertThat(loan.getInstallments().get(0).getStatus()).isEqualTo(InstallmentStatus.OVERDUE);
+    }
+
+    @Test
+    @DisplayName("penalty accrues for each additional day an installment stays overdue")
+    void overduePenaltyAccruesPerDay() {
+        loan.approve();
+        loan.applyEndOfDayProcessing(originationDate.plus(31, ChronoUnit.DAYS)); // ACTIVE -> OVERDUE; brak kary jeszcze na tym wywołaniu
+        assertThat(loan.getAccruedPenalty().amount()).isEqualByComparingTo(BigDecimal.ZERO);
+
+        loan.applyEndOfDayProcessing(originationDate.plus(32, ChronoUnit.DAYS)); // pełny dzień zaległości -> pierwsza kara
+        Money penaltyAfterOneDay = loan.getAccruedPenalty();
+        assertThat(penaltyAfterOneDay.amount()).isGreaterThan(BigDecimal.ZERO);
+
+        loan.applyEndOfDayProcessing(originationDate.plus(33, ChronoUnit.DAYS)); // drugi dzień zaległości -> kara rośnie dalej
+        assertThat(loan.getAccruedPenalty().amount()).isGreaterThan(penaltyAfterOneDay.amount());
+    }
+
+    @Test
+    @DisplayName("paying the exact original installment amount still settles it even while penalty has accrued")
+    void paymentSettlesInstallmentDespiteAccruedPenalty() {
+        loan.approve();
+        loan.applyEndOfDayProcessing(originationDate.plus(32, ChronoUnit.DAYS)); // OVERDUE, jeden dzień kary naliczony
+
+        loan.recordPayment(Money.sek("100.00"));
+
+        assertThat(loan.getInstallments().get(0).isSettled()).isTrue();
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("staying overdue beyond the default threshold moves the loan to DEFAULTED")
+    void exceedingDefaultThresholdMovesToDefaulted() {
+        loan.approve();
+        loan.applyEndOfDayProcessing(originationDate.plus(31, ChronoUnit.DAYS)); // ACTIVE -> OVERDUE
+
+        loan.applyEndOfDayProcessing(originationDate.plus(47, ChronoUnit.DAYS)); // 17 dni zaległości, powyżej progu 15 dni
+
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.DEFAULTED);
+    }
+
+    @Test
+    @DisplayName("processEndOfDay on a pending loan is a no-op")
+    void endOfDayOnPendingLoanIsNoOp() {
+        loan.applyEndOfDayProcessing(originationDate.plus(100, ChronoUnit.DAYS));
+
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.PENDING_APPROVAL);
+        assertThat(loan.getInstallments()).allMatch(installment -> installment.getStatus() == InstallmentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("processEndOfDay on a paid-off loan is a no-op")
+    void endOfDayOnPaidOffLoanIsNoOp() {
+        loan.approve();
+        loan.recordPayment(Money.sek("100.00"));
+        loan.recordPayment(Money.sek("100.00"));
+        loan.recordPayment(Money.sek("100.00"));
+
+        loan.applyEndOfDayProcessing(originationDate.plus(200, ChronoUnit.DAYS));
+
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.PAID_OFF);
+        assertThat(loan.getAccruedPenalty().amount()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 }

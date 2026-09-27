@@ -5,6 +5,8 @@ import banking_system.loan.domain.model.Loan;
 import banking_system.loan.domain.model.LoanStatus;
 import banking_system.shared.domain.model.Money;
 
+import java.time.Instant;
+
 public interface LoanState {
 
     LoanStatus status();
@@ -27,6 +29,10 @@ public interface LoanState {
 
     default LoanState markDefaulted(Loan loan) {
         throw illegalTransition("mark defaulted");
+    }
+
+    default LoanState processEndOfDay(Loan loan, Instant asOf) {
+        return this;
     }
 
     private InvalidLoanStateTransitionException illegalTransition(String action) {

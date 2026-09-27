@@ -24,6 +24,7 @@ public class LoanMapper {
                 .id(domain.getId().value())
                 .borrowerAccountId(domain.getBorrowerAccountId().value())
                 .principalAmount(domain.getPrincipal().amount())
+                .accruedPenalty(domain.getAccruedPenalty().amount())
                 .currency(domain.getPrincipal().currency().getCurrencyCode())
                 .annualInterestRate(domain.getAnnualInterestRate())
                 .termInMonths(domain.getTermInMonths())
@@ -75,6 +76,7 @@ public class LoanMapper {
                 entity.getTermInMonths(),
                 entity.getCreatedAt(),
                 installments,
+                new Money(entity.getAccruedPenalty(), currency),
                 status.toState()
         );
     }

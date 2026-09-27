@@ -39,4 +39,11 @@ public class JpaLoanRepositoryAdapter implements LoanRepositoryPort {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Loan> findAll() {
+        return repository.findAll().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

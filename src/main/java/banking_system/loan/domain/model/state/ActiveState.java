@@ -4,6 +4,8 @@ import banking_system.loan.domain.model.Loan;
 import banking_system.loan.domain.model.LoanStatus;
 import banking_system.shared.domain.model.Money;
 
+import java.time.Instant;
+
 public final class ActiveState implements LoanState {
 
     public static final ActiveState INSTANCE = new ActiveState();
@@ -24,5 +26,11 @@ public final class ActiveState implements LoanState {
     @Override
     public LoanState markOverdue(Loan loan) {
         return OverdueState.INSTANCE;
+    }
+
+    @Override
+    public LoanState processEndOfDay(Loan loan, Instant asOf) {
+        boolean newlyOverdue = loan.markInstallmentsOverdueAsOf(asOf);
+        return newlyOverdue ? OverdueState.INSTANCE : ActiveState.INSTANCE;
     }
 }

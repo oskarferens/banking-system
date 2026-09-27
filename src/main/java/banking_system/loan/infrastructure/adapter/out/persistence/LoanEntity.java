@@ -37,6 +37,9 @@ public class LoanEntity {
     @Column(name = "principal_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal principalAmount;
 
+    @Column(name = "accrued_penalty", nullable = false, precision = 19, scale = 2)
+    private BigDecimal accruedPenalty;
+
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 

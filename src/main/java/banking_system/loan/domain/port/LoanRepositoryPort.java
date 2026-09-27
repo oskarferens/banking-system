@@ -10,4 +10,5 @@ public interface LoanRepositoryPort {
     Loan save(Loan loan);
     Optional<Loan> findById(LoanId id);
     List<Loan> findAllByBorrowerAccountId(String accountId);
+    List<Loan> findAll();
 }
