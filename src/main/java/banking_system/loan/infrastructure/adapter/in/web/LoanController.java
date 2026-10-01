@@ -76,11 +76,11 @@ public class LoanController {
             int termInMonths
     ) {}
 
-
     public record LoanResponseDto(
             String id,
             String borrowerAccountId,
             BigDecimal principal,
+            BigDecimal accruedPenalty,
             String currency,
             BigDecimal annualInterestRate,
             int termInMonths,
@@ -97,6 +97,7 @@ public class LoanController {
                     loan.getId().value(),
                     loan.getBorrowerAccountId().value(),
                     loan.getPrincipal().amount(),
+                    loan.getAccruedPenalty().amount(),
                     loan.getPrincipal().currency().getCurrencyCode(),
                     loan.getAnnualInterestRate(),
                     loan.getTermInMonths(),
