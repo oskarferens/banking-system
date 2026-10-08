@@ -1,0 +1,302 @@
+{
+  "info": {
+    "name": "Banking System - smoke test",
+    "description": "Smoke test of the Banking System API: registers a user, opens an account, takes and approves a loan, then advances the Time Machine to trigger End-of-Day processing. token, userId, accountId and loanId are captured automatically. Start the app (docker compose up --build) and run the whole collection with the Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "1. Register a new user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('register returns 200', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('token', body.token);",
+              "  pm.collectionVariables.set('userId', body.userId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"demo-{{$timestamp}}@bank.se\",\n  \"password\": \"secret123\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/register",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "auth", "register" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Open an account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('account created (200)', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('accountId', body.id);",
+              "  pm.collectionVariables.set('accountNumber', body.accountNumber);",
+              "  pm.test('starts empty, in SEK, with a -500 overdraft limit', function () {",
+              "    pm.expect(body.balance).to.eql(0);",
+              "    pm.expect(body.currency).to.eql('SEK');",
+              "    pm.expect(body.overdraftLimit).to.eql(-500);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/accounts?ownerId={{userId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "accounts" ],
+          "query": [ { "key": "ownerId", "value": "{{userId}}" } ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Deposit 1000 SEK",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('deposit returns 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('balance is 1000', function () { pm.expect(pm.response.json().balance).to.eql(1000); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/accounts/{{accountId}}/deposit?amount=1000",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "accounts", "{{accountId}}", "deposit" ],
+          "query": [ { "key": "amount", "value": "1000" } ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Apply for a loan (300 SEK, 3 months)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('loan application returns 201', function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) {",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('loanId', body.id);",
+              "  pm.test('loan is PENDING_APPROVAL with 3 installments', function () {",
+              "    pm.expect(body.status).to.eql('PENDING_APPROVAL');",
+              "    pm.expect(body.installments.length).to.eql(3);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"borrowerAccountId\": \"{{accountId}}\",\n  \"principal\": 300,\n  \"termInMonths\": 3\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/loans",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "loans" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Approve the loan",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('approve returns 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('loan is ACTIVE', function () { pm.expect(pm.response.json().status).to.eql('ACTIVE'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/loans/{{loanId}}/approve",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "loans", "{{loanId}}", "approve" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Check the balance (principal disbursed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('get account returns 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('balance is 1300 (1000 + 300 loan)', function () { pm.expect(pm.response.json().balance).to.eql(1300); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/accounts/{{accountId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "accounts", "{{accountId}}" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Time Machine: skip 32 days",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('skip returns 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/time-machine/skip?days=32",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "time-machine", "skip" ],
+          "query": [ { "key": "days", "value": "32" } ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Loan is now OVERDUE",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('get loan returns 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test('loan is OVERDUE', function () { pm.expect(body.status).to.eql('OVERDUE'); });",
+              "pm.test('a late-payment penalty has accrued', function () { pm.expect(body.accruedPenalty).to.be.above(0); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/loans/{{loanId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "loans", "{{loanId}}" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Inbox has the status-change notification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('notifications returns 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('inbox mentions ACTIVE to OVERDUE', function () { pm.expect(pm.response.text()).to.include('ACTIVE to OVERDUE'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/notifications/user/{{userId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "notifications", "user", "{{userId}}" ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10. Reset the Time Machine",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('reset returns 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/time-machine/reset",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "v1", "time-machine", "reset" ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
